@@ -1,3 +1,13 @@
-body {
-    background-color: lightgray;
+*, ::before, ::after{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background: #B0C4DE !important;
+}
+
+nav, footer{
+    background: whitesmoke !important;
 }
