@@ -19,8 +19,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     # composer require gedmo/doctrine-extensions
         # => Permet d'utiliser les class de Gedmo, pour avoir les propriétés de type datetime (createAt, updateAt, deleteAt)
-    use TimestampableEntity;
-    use SoftDeleteableEntity;
+    use TimestampableEntity;    #   $createAt, $upadateAt
+    use SoftDeleteableEntity;   #   $deleteAt
 
     /**
      * @ORM\Id
