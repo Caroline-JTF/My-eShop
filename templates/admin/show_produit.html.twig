@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin | Voir tous les produits{% endblock %}
+
+{% block body %}
+
+    <h1 class="text-center my-3">Tous les produits</h1>
+
+   <div class="row">
+        <div class="col-8 mx-auto">
+            {% include 'include/_flashes.html.twig' %}
+        </div>
+    </div>
+
+    <div>
+        <div class="col-12 text-center my-4">
+            <a href="{{ path('create_produit') }}" class="btn btn-lg btn-dark">Ajouter un produit <i class="fa-solid fa-circle-plus"></i></a>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Couleur</th>
+                <th>Taille</th>
+                <th>Collection</th>
+                <th>Photo</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Crée le</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+         <tbody>
+            {% for produit in produits %}
+                <tr>
+                    <td>{{ produit.id }}</td>
+                    <td>{{ produit.title }}</td>
+                    <td>{{ produit.description }}</td>
+                    <td>{{ produit.color }}</td>
+                    <td>{{ produit.size }}</td>
+                    <td>{{ produit.collection }}</td>
+                    <td>
+                        <img src="{{ asset('uploads/' ~produit.photo) }}" alt="image de produit" width="80" height="58" style="object-fit: contain;">
+                    </td>
+                    <td>{{ produit.price }}</td>
+                    <td>{{ produit.stock }}</td>
+                    <td>{{ produit.createdAt | date('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ path('show_produit') }}" class="text-center align-middle" title="voir le produit"><i class="fa-solid fa-eye"></i></a> |
+                        <a href="{{ path('update_produit', {'id': produit.id}) }}" class="text-center align-middle" title="modifier le produit"><i class="fa-solid fa-edit"></i></a> |
+                        <a href="{{ path('soft_delete_produit', {'id' : produit.id}) }}" class="text-center align-middle" title="archiver le produit"><i class="fa-solid fa-trash" style="color:red;" onclick="return confirm('Voulez-vous archivez ce produit ?\n Il ne sera plus en ligne')"></i></a>
+                    </td>
+                </tr>
+            {% else %}
+                
+                <tr>
+                    <td colspan="11" class="text-center">Aucun produit en ligne</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

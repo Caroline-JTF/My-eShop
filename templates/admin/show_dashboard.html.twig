@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+
+    <h1 class="text-center mx-auto">Tableau de bord</h1>
+
+    <div class="row">
+        <div class="col-12 text-center my-5">
+            <a href="{{ path('show_produit') }}" class="col-3 btn btn-outline-dark">Gestion Produit</a>
+            <a href="" class="col-3 btn btn-outline-dark">Gestion Commande</a>
+            <a href="" class="col-3 btn btn-outline-dark">Gestion Membre</a>
+        </div>
+    </div>
+
+{% endblock %}
+
