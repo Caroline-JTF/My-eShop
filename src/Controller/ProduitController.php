@@ -26,7 +26,7 @@ class ProduitController extends AbstractController
     public function showProduit(ProduitRepository $produitRepository):Response
     {
         return $this->render('admin/show_produit.html.twig', [
-            'produits' => $produitRepository->findAll()
+            'produits' => $produitRepository->findBy(['deletedAt' => null]),
         ]);
     }
     
@@ -49,26 +49,15 @@ class ProduitController extends AbstractController
 
             if($photo){
 
-                $extension = '.' . $photo->guessExtension();
-                $safeFilename = $slugger->slug($produit->getTitle());
+                $this->handleFile($produit, $photo, $slugger);
+            }
 
-                $newFilename = $safeFilename . '_' . uniqid() . $extension;
+            $entityManager->persist($produit);
+            $entityManager->flush();
 
-                try{
-                    $photo->move($this->getParameter('uploads_dir'), $newFilename);
-                    $produit->setPhoto($newFilename);
-                } catch (FileException $exception) {
-                    $this->addFlash('warning', 'La photo du produit ne s\'est pas importée avec succès. Veuillez réesayer een modifiant le produit.');
-                    // return$this->redirectToRoute('show_produit');
-                } // end catch
+            $this->addFlash('success', 'Le nouveau produit est en ligne avec succès');
+            return $this->redirectToRoute('show_produit');
 
-                $entityManager->persist($produit);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Le nouveau produit est en ligne avec succès');
-                return $this->redirectToRoute('show_produit');
-
-            }// end if($photo)
         }// end if($form)
 
         return $this->render('admin/form/form_produit.html.twig', [
@@ -116,7 +105,7 @@ class ProduitController extends AbstractController
 
     //////////////////// PRIVATE FONCTION ////////////////////
 
-    private function handleFile(Produit $produit, UploadedFile $photo, SluggerInterface $slugger)
+    private function handleFile(Produit $produit, UploadedFile $photo, SluggerInterface $slugger): void
     {
         $extension = '.' . $photo->guessExtension();
         $safeFilename = $slugger->slug($produit->getTitle());
@@ -130,6 +119,36 @@ class ProduitController extends AbstractController
             $this->addFlash('warning', 'La photo du produit ne s\'est pas importée avec succès. Veuillez réesayer een modifiant le produit.');
         }
     }
+
+    /**
+     * @Route ("/archiver-un-produit/{id}", name="soft_delete_produit", methods={"GET"})
+     */
+    public function softDeleteProduit(Produit $produit, EntityManagerInterface $entityManager): Response
+    {
+        $produit->setDeletedAt(new DateTime());
+
+        $entityManager->persist($produit);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le produit' . $produit->getTitle() .' a bien été archivé.');
+        return $this->redirectToRoute('show_produit');
+    }
+
+    /**
+     * @Route ("/restaurer-un-produit/{id}", name="restore_produit", methods={"GET"})
+     */
+    public function restoreProduit(Produit $produit, EntityManagerInterface $entityManager): Response
+    {
+        // côté miroir de la bascule (on/off)
+        $produit->setDeletedAt(null);
+        
+        $entityManager->persist($produit);
+        $entityManager->flush();
+
+        $this->addFlash('success', "Le produit " . $produit->getTitle() ." a bien été restauré.");
+        return $this->redirectToRoute('show_produit');
+    }
+
 }
 
 ?>
