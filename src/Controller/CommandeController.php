@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * @Route("/admin")
@@ -56,7 +57,33 @@ class CommandeController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/restaure-une-commande{id}", name="restore_commande", methods={"GET"})
+     * @return Response
+     */
+    public function restoreCommande(Commande $commande, EntityManagerInterface $entityManager): Response
+    {
+        $commande->setDeletedAt(null);
+        $commande->setState('en cours');
+
+        $entityManager->persist($commande);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('show_canceled_commandes');
+    }
     
+    /**
+     * @Route ("/supprimer-une-commande/{id}", name="hard_delete_commande", methods={"GET"})
+     * @return Response
+     */
+    public function hardDeleteCommande(Commande $commande, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($commande);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'La commande a bien été supprimée.');
+        return $this->redirectToRoute('sow_canceled_commandes');
+    }
 }
 
 ?>
