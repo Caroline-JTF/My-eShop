@@ -72,5 +72,17 @@ class CommandeRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
     */
+
+    // Création d'une requête personnalisée pour récupérer toutes les commandes dont la propriétés 'deletedAt' n'est pas null
+    public function findByCanceled() : array
+    {
+        return $this->createQueryBuilder('c')
+        ->where("c.deletedAt IS NOT NULL")
+        ->orderBy("c.createdAt", "DESC")
+        ->getQuery()
+        ->getResult()
+        ;
+    }
 }

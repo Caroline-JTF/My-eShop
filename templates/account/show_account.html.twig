@@ -91,6 +91,7 @@
                                 <tbody>
 
                                 {% for command in commands %}
+                                    {% set produit=command.products | first %}
                                     <tr>
                                         <td>{{ command.id }}</td>
                                         <td>{{ command.user.id }} - {{ command.user.fullname }} - {{ command.user.email }}</td>
