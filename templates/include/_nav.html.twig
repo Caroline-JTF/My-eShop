@@ -49,13 +49,17 @@
                                     <li><a class="dropdown-item" href="{{ path('show_commandes') }}">Gestion Commandes</a></li>
                                     <li><a class="dropdown-item" href="#">Gestion Membre</a></li>
                                 </ul>
+
+                            </li>
                                 
                         {% endif %}    {# is_granted #}
                     {% endif %}    {# if #}
-
-
-                    </li>
                 </ul>
+
+                <div class="me-5">
+                    <a href="{{ path('show_panier') }}" class="btn btn-primary"><i class="fa-solid fa-cart-arrow-down"></i> Panier</a>
+                </div>
+
             </div>
         </div>
     </nav>
