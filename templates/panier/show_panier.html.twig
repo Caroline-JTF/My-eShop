@@ -16,7 +16,7 @@
         <div class="col-10 mx-auto">
             <table class="table">
                 <thead>
-                    <tr>
+                    <tr class="bg-light border-bottom border-dark">
                         <th class="text-center">#</th>
                         <th class="text-center">Produit</th>
                         <th class="text-center">Quantité</th>
@@ -25,16 +25,47 @@
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-
+                <tbody class="bg-light">
+                    {% for item in app.session.get('panier') %}
+                        {# {% if key is not same as 'total' %} #}
+                            <tr>
+                                <td class="align-middle text-center">{{ item['produit'].id }}</td>
+                                <td class="align-middle text-center">
+                                    <div>{{ item['produit'].title }}</div>
+                                    {% if item['produit'].photo is not null %}
+                                        <img src="{{ asset('uploads/') ~item['produit'].photo }}" alt="Photo de produit" width="250" height="120" style="object-fit: contain;">
+                                        {% else %}
+                                        
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle text-center">{{ item['quantity'] }}</td>
+                                <td class="align-middle text-center">{{ item['produit'].price }}€</td>
+                                <td class="align-middle text-center">{{ item['produit'].price * item['quantity'] }}€</td>
+                                <td class="align-middle text-center">
+                                    <a href="{{ path('panier_remove', {'id': item['produit'].id }) }}" class="btn btn-sm btn-danger"><i class="fa-solid fa-circle-minus" title="Supprimer ce produit du panier"></i></a>
+                                </td>
+                            </tr>
+                        {# {% endif %} #}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center bg-light">Votre panier est vide</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
                 <tfoot>
-                    <tr>
-
+                    <tr class="bg-dark text-white">
+                        <td colspan="4" class="align-middle text-center">Montant total :</td>
+                        {# <td class="align-middle text-center">{{ app.session.get('panier')['total'] }}€</td> #}
+                        <td class="align-middle text-center">{{ total }}€</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
-            <a href="#" class="btn btn-success col-3 text-center">Valider mon panier</a>
+            <div class="d-flex my-5 justify-content-center gap-3">
+                <a href="{{ path('panier_validate') }}" class="btn btn-success col-4 text-center">Valider mon panier</a>
+                <a href="{{ path('empty_panier') }}" class="btn btn-danger col-4 text-center">Vider mon panier</a>
+            </div>
+            
         </div>
     </div>
 

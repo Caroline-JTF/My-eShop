@@ -2,7 +2,11 @@
 
 namespace App\Controller;
 
-use App\Repository\ProduitRepository;
+use DateTime;
+use App\Entity\User;
+use App\Entity\Produit;
+use App\Entity\Commande;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -13,15 +17,132 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class PanierController extends AbstractController
 {
+    //////////////////// VOIR LE PANIER ////////////////////
+
     /**
      * @Route ("/voir-mon-panier", name="show_panier", methods={"GET"})
      * @return Response
      */
-    public function showPaniere(SessionInterface $session, ProduitRepository $produitRepository): Response
+    public function showPanier(SessionInterface $session): Response
+    {
+        $panier = $session->get('panier', []);
+        $total =0;
+
+        foreach($panier as $item){
+            $totalItem = $item['produit']->getPrice() * $item['quantity'];
+            $total += $totalItem; // Cela revient à écrire => $total = $total + $totalItem;
+        }
+
+        return $this->render('panier/show_panier.html.twig', [
+            'total' => $total
+        ]);
+    }
+
+    //////////////////// AJOUTER UN PRODUIT AU PANIER ////////////////////
+
+    /**
+     * @Route ("/ajouter-un-produit/{id}", name="panier_add", methods={"GET"})
+     * @return Response
+     */
+    public function add(Produit $produit, SessionInterface $session): Response
+    {
+        // Si dans la session le panier n'existe pas alors la méthode GET retournera le second paramètre, ici un tableau vide
+        $panier = $session->get('panier', []);
+
+        if ( !empty( $panier[$produit->getId()] ) ){
+            ++$panier[$produit->getId()]['quantity'];
+        } else {
+            $panier[$produit->getId()]['quantity'] = 1;
+            $panier[$produit->getId()]['produit'] = $produit;
+        }
+
+        // Ici, nous devons set() le panier en session, en lui passant notre $panier[]
+        $session->set('panier', $panier);
+
+        $this->addFlash('success', 'Votre article à bien été ajouté à votre panier');
+        return $this->redirectToRoute('default_home');
+    }
+
+    //////////////////// VIDER LE PANIER ////////////////////
+
+    /**
+     * @Route ("/vider-mon-panier", name="empty_panier", methods={"GET"})
+     * @return Response
+     */
+    public function emptyPanier (SessionInterface $session): Response
+    {
+        // La méthode remove() permet de supprimer un attribut de la $session
+        $session->remove('panier');
+
+        return $this->redirectToRoute('show_panier');
+    }
+
+    //////////////////// RETIRER UN PRODUIT DU PANIER ////////////////////
+
+    /**
+     * @Route ("/retirer-du-panier/{id}", name="panier_remove", methods={"GET"})
+     * @return Response
+     */
+    public function delete (int $id, SessionInterface $session): Response
+    {
+        $panier = $session->get('panier');
+        
+        // arry_key_exists() est une fonction native de PHP, qui permet de vérifier si une key existe dans  un tableau.
+        // Elle prend 2 arguments = la valeur à vérifier et le tableau dans lequel rechercher.
+        if(array_key_exists($id, $panier)){
+            // Unset est une fonction native de PHP, qui permet de supprimer une variable.
+            unset($panier[$id]);
+        }else{
+            $this->addFlash('warning', 'Ce produit n\'est pas dans votre panier');
+        }
+
+        $session->set('panier', $panier);
+
+        return $this->redirectToRoute('show_panier');
+    }
+
+    //////////////////// VALIDATION PANIER ////////////////////
+
+    /**
+     * @Route ("valider-mon-panier", name="panier_validate", methods={"GET"})
+     */
+    public function validate(SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
         $panier = $session->get('panier', []);
 
-        return $this->render('panier/show_panier.html.twig');
+        if(empty($panier)){
+            $this->addFlash('warning', 'Votre panier est vide.');
+            return $this->redirectToRoute('show_panier');
+        } else {
+            $commande = new Commande();
+            $user = $entityManager->getRepository(User::class)->find($this->getUser());
+
+            $commande->setCreatedAt(new DateTime());
+            $commande->setUpdatedAt(new DateTime());
+            $commande->setState('en cours');
+            $commande->setUser($user);
+
+            $totalQuantity =0;
+            $total = 0;
+
+            foreach($panier as $item){
+                $totalItem = $item['produit']->getPrice() * $item['quantity'];
+                $total += $totalItem;
+
+                $commande->addProduct($item['produit']);
+            }
+
+            $commande->setTotal($total);
+            $commande->setQuantity(count($panier));
+
+            $entityManager->persist($commande);
+            $entityManager->flush();
+
+            $session->remove('panier');
+
+            $this->addFlash('success', "Félicitation, votre commande est en cours. Vous pouvez la retrouver dans Mes Commandes.");
+            return $this->redirectToRoute('show_account');
+        }
     }
 }
 
