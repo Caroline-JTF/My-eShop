@@ -1,3 +1,13 @@
-body {
-    background-color: lightgray;
+*, ::before, ::after{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-image: radial-gradient(circle at center center, transparent,rgb(251,251,251)),repeating-linear-gradient(135deg, rgb(251,251,251) 0px, rgb(251,251,251) 12px,transparent 12px, transparent 19px,rgb(251,251,251) 19px, rgb(251,251,251) 24px,transparent 24px, transparent 28px),repeating-linear-gradient(45deg, rgb(216,208,208) 0px, rgb(216,208,208) 7px,transparent 7px, transparent 14px),linear-gradient(90deg, rgb(251,251,251),rgb(251,251,251));
+}
+
+nav, footer{
+    background: whitesmoke !important;
 }
